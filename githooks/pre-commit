@@ -1,0 +1,7 @@
+#!/usr/bin/env ruby
+Dir["**/*.go"].each do |go|
+  if File.basename(go) !~ /^_/
+    puts "gofmt #{go}"
+    system("gofmt -w=true #{go}")
+  end
+end
