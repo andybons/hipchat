@@ -2,7 +2,7 @@ Hipchat
 =====
 This project implements a [Go](http://golang.org) client library for the [Hipchat API](https://www.hipchat.com/docs/api/).
 
-*The only supported call right now is posting a message to a room.*
+<b>The only supported call right now is posting a message to a room.</b>
 
 Installing
 ----------
