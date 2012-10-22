@@ -16,7 +16,7 @@ Example usage:
 package main
 
 import (
-  "github.com/andybons/hipchat"
+	"github.com/andybons/hipchat"
 	"log"
 )
 
