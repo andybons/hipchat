@@ -1,7 +1,13 @@
-#!/usr/bin/env ruby
-Dir["**/*.go"].each do |go|
-  if File.basename(go) !~ /^_/
-    puts "gofmt #{go}"
-    system("gofmt -w=true #{go}")
-  end
-end
+#!/usr/bin/env bash
+
+# Exit on error.
+set -e
+
+echo "Running go vet..."
+go vet hipchat/...
+
+echo "Running tests..."
+go test hipchat/...
+
+echo "Running gofmt..."
+find . -name "*.go" | xargs gofmt -w

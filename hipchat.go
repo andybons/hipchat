@@ -61,15 +61,19 @@ type MessageRequest struct {
 	Color string
 }
 
-type MessageResponse struct {
-	Status string
+type ErrorResponse struct {
+	Error struct {
+		Code    int
+		Type    string
+		Message string
+	}
 }
 
 type Client struct {
 	AuthToken string
 }
 
-func urlValuesFromRequest(req MessageRequest) (url.Values, error) {
+func urlValuesFromMessageRequest(req MessageRequest) (url.Values, error) {
 	if len(req.RoomId) == 0 || len(req.From) == 0 || len(req.Message) == 0 {
 		return nil, errors.New("The RoomId, From, and Message fields are all required.")
 	}
@@ -91,9 +95,9 @@ func urlValuesFromRequest(req MessageRequest) (url.Values, error) {
 }
 
 func (c *Client) PostMessage(req MessageRequest) error {
-	uri := fmt.Sprintf("%s/rooms/message?auth_token=%s", baseURL, c.AuthToken)
+	uri := fmt.Sprintf("%s/rooms/message?auth_token=%s", baseURL, url.QueryEscape(c.AuthToken))
 
-	payload, err := urlValuesFromRequest(req)
+	payload, err := urlValuesFromMessageRequest(req)
 	if err != nil {
 		return err
 	}
@@ -108,13 +112,42 @@ func (c *Client) PostMessage(req MessageRequest) error {
 		return err
 	}
 
-	var response MessageResponse
-	if err := json.Unmarshal(body, &response); err != nil {
+	msgResp := &struct{ Status string }{}
+	if err := json.Unmarshal(body, msgResp); err != nil {
 		return err
 	}
-	if response.Status != ResponseStatusSent {
+	if msgResp.Status != ResponseStatusSent {
 		return errors.New("PostMessage: response 'status' field was not 'sent'.")
 	}
 
 	return nil
+}
+
+func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
+	uri := fmt.Sprintf("%s/rooms/history?auth_token=%s&room_id=%s&date=%s&timezone=%s",
+		baseURL, url.QueryEscape(c.AuthToken), url.QueryEscape(id), url.QueryEscape(date), url.QueryEscape(tz))
+
+	resp, err := http.Get(uri)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 200 {
+		var errResp ErrorResponse
+		if err := json.Unmarshal(body, &errResp); err != nil {
+			return nil, err
+		}
+		return nil, errors.New(errResp.Error.Message)
+	}
+	msgResp := &struct{ Messages []Message }{}
+	if err := json.Unmarshal(body, msgResp); err != nil {
+		return nil, err
+	}
+
+	return msgResp.Messages, nil
 }

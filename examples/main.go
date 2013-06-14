@@ -8,7 +8,7 @@ import (
 func main() {
 	c := hipchat.Client{AuthToken: "<PUT YOUR AUTH TOKEN HERE>"}
 	req := hipchat.MessageRequest{
-		RoomId:        "product",
+		RoomId:        "Rat Man’s Den",
 		From:          "GLaDOS",
 		Message:       "Bad news: Combustible lemons failed.",
 		Color:         hipchat.ColorPurple,
