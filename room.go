@@ -2,7 +2,7 @@ package hipchat
 
 type Room struct {
 	// The ID of the room.
-	RoomId int `json:"room_id"`
+	Id int `json:"room_id"`
 
 	// The name of the room.
 	Name string
