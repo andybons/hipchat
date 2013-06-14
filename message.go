@@ -4,6 +4,10 @@ import (
 	"time"
 )
 
+const (
+	ISO8601 = "2006-01-02T15:04:05-0700"
+)
+
 type Message struct {
 	// Date message was sent in ISO-8601 format in request timezone.
 	ISODate string `json:"date"`
@@ -24,10 +28,6 @@ type Message struct {
 		URL  string
 	}
 }
-
-const (
-	ISO8601 = "2006-01-02T15:04:05-0700"
-)
 
 func (m *Message) Time() (time.Time, error) {
 	return time.Parse(ISO8601, m.ISODate)
