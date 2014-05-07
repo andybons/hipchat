@@ -1,6 +1,6 @@
 Hipchat
 =====
-This project implements a [Go](http://golang.org) client library for the [Hipchat API](https://www.hipchat.com/docs/api/).
+This project implements a [Go](http://golang.org) client library for the [Hipchat API](https://www.hipchat.com/docs/api/) (*API version 2 is not supported*).
 
 Pull requests are welcome as the API is limited to only a few calls right now.
 
