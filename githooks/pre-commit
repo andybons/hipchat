@@ -1,13 +1,8 @@
 #!/usr/bin/env bash
 
-# Exit on error.
-set -e
+set -e -x
 
-echo "Running go vet..."
-go vet hipchat/...
-
-echo "Running tests..."
-go test hipchat/...
-
-echo "Running gofmt..."
-find . -name "*.go" | xargs gofmt -w
+golint .
+go vet ./...
+go test ./...
+goimports -w .

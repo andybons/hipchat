@@ -1,8 +1,9 @@
 package main
 
 import (
-	"../" // Use github.com/andybons/hipchat for your code.
 	"log"
+
+	"github.com/andybons/hipchat"
 )
 
 func main() {
