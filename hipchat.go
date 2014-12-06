@@ -61,18 +61,18 @@ type MessageRequest struct {
 	Color string
 }
 
-type Error struct {
+type HipchatError struct {
 	Code    int
 	Type    string
 	Message string
 }
 
-func (e Error) Error() string {
+func (e HipchatError) Error() string {
 	return e.Message
 }
 
 type ErrorResponse struct {
-	Error Error
+	Error HipchatError
 }
 
 type Client struct {
