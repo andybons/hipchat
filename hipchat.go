@@ -143,7 +143,7 @@ func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, getError(body)
 	}
 	msgResp := &struct{ Messages []Message }{}
@@ -167,7 +167,7 @@ func (c *Client) RoomList() ([]Room, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, getError(body)
 	}
 	roomsResp := &struct{ Rooms []Room }{}
