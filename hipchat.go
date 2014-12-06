@@ -178,8 +178,8 @@ func (c *Client) RoomList() ([]Room, error) {
 	return roomsResp.Rooms, nil
 }
 
-// getError is a small helper function for getting and returning the error from
-// hipchat.
+// getError unmarshals a HipChat error response from the request body and
+// returns its error field.
 func getError(body []byte) error {
 	var errResp ErrorResponse
 	if err := json.Unmarshal(body, &errResp); err != nil {
