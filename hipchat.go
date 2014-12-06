@@ -61,12 +61,18 @@ type MessageRequest struct {
 	Color string
 }
 
+type HipchatError struct {
+	Code    int
+	Type    string
+	Message string
+}
+
+func (e HipchatError) Error() string {
+	return e.Message
+}
+
 type ErrorResponse struct {
-	Error struct {
-		Code    int
-		Type    string
-		Message string
-	}
+	Error HipchatError
 }
 
 type Client struct {
@@ -117,7 +123,7 @@ func (c *Client) PostMessage(req MessageRequest) error {
 		return err
 	}
 	if msgResp.Status != ResponseStatusSent {
-		return errors.New("PostMessage: response 'status' field was not 'sent'.")
+		return getError(body)
 	}
 
 	return nil
@@ -137,12 +143,8 @@ func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 {
-		var errResp ErrorResponse
-		if err := json.Unmarshal(body, &errResp); err != nil {
-			return nil, err
-		}
-		return nil, errors.New(errResp.Error.Message)
+	if resp.StatusCode != http.StatusOK {
+		return nil, getError(body)
 	}
 	msgResp := &struct{ Messages []Message }{}
 	if err := json.Unmarshal(body, msgResp); err != nil {
@@ -165,12 +167,8 @@ func (c *Client) RoomList() ([]Room, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 {
-		var errResp ErrorResponse
-		if err := json.Unmarshal(body, &errResp); err != nil {
-			return nil, err
-		}
-		return nil, errors.New(errResp.Error.Message)
+	if resp.StatusCode != http.StatusOK {
+		return nil, getError(body)
 	}
 	roomsResp := &struct{ Rooms []Room }{}
 	if err := json.Unmarshal(body, roomsResp); err != nil {
@@ -178,4 +176,14 @@ func (c *Client) RoomList() ([]Room, error) {
 	}
 
 	return roomsResp.Rooms, nil
+}
+
+// getError unmarshals a HipChat error response from the request body and
+// returns its error field.
+func getError(body []byte) error {
+	var errResp ErrorResponse
+	if err := json.Unmarshal(body, &errResp); err != nil {
+		return err
+	}
+	return errResp.Error
 }
