@@ -77,6 +77,14 @@ type ErrorResponse struct {
 
 type Client struct {
 	AuthToken string
+	BaseURL   string
+}
+
+// NewClient returns a Client setup with the proper authToken that points to
+// the Hipchat service
+// Override BaseURL before using the Client to set a custom host
+func NewClient(authToken string) Client {
+	return Client{AuthToken: authToken, BaseURL: baseURL}
 }
 
 func urlValuesFromMessageRequest(req MessageRequest) (url.Values, error) {
@@ -101,7 +109,7 @@ func urlValuesFromMessageRequest(req MessageRequest) (url.Values, error) {
 }
 
 func (c *Client) PostMessage(req MessageRequest) error {
-	uri := fmt.Sprintf("%s/rooms/message?auth_token=%s", baseURL, url.QueryEscape(c.AuthToken))
+	uri := fmt.Sprintf("%s/rooms/message?auth_token=%s", c.BaseURL, url.QueryEscape(c.AuthToken))
 
 	payload, err := urlValuesFromMessageRequest(req)
 	if err != nil {
@@ -131,7 +139,7 @@ func (c *Client) PostMessage(req MessageRequest) error {
 
 func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 	uri := fmt.Sprintf("%s/rooms/history?auth_token=%s&room_id=%s&date=%s&timezone=%s",
-		baseURL, url.QueryEscape(c.AuthToken), url.QueryEscape(id), url.QueryEscape(date), url.QueryEscape(tz))
+		c.BaseURL, url.QueryEscape(c.AuthToken), url.QueryEscape(id), url.QueryEscape(date), url.QueryEscape(tz))
 
 	resp, err := http.Get(uri)
 	if err != nil {
@@ -155,7 +163,7 @@ func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 }
 
 func (c *Client) RoomList() ([]Room, error) {
-	uri := fmt.Sprintf("%s/rooms/list?auth_token=%s", baseURL, url.QueryEscape(c.AuthToken))
+	uri := fmt.Sprintf("%s/rooms/list?auth_token=%s", c.BaseURL, url.QueryEscape(c.AuthToken))
 
 	resp, err := http.Get(uri)
 	if err != nil {
