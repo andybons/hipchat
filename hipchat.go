@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	baseURL = "https://api.hipchat.com/v1"
+	defaultBaseURL = "https://api.hipchat.com/v1"
 
 	ColorYellow = "yellow"
 	ColorRed    = "red"
@@ -80,11 +80,11 @@ type Client struct {
 	BaseURL   string
 }
 
-// NewClient returns a Client setup with the proper authToken that points to
-// the Hipchat service
-// Override BaseURL before using the Client to set a custom host
+// NewClient allocates and returns a Client with the given authToken.
+// By default, the client will use the publicly available HipChat servers.
+// For internal or custom servers, set the BaseURL field of the Client.
 func NewClient(authToken string) Client {
-	return Client{AuthToken: authToken, BaseURL: baseURL}
+	return Client{AuthToken: authToken, BaseURL: defaultBaseURL}
 }
 
 func urlValuesFromMessageRequest(req MessageRequest) (url.Values, error) {

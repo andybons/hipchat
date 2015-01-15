@@ -51,3 +51,4 @@ Contributors
 + Akshay Shah ([@akshayjshah](https://github.com/akshayjshah))
 + Michael Biven ([@michaelbiven](https://github.com/michaelbiven))
 + Tarrant Rollins ([@tarrant](https://github.com/tarrant))
++ Edward Muller ([@freeformz](https://github.com/freeformz))
