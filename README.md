@@ -23,7 +23,7 @@ import (
 )
 
 func main() {
-	c := hipchat.Client{AuthToken: "<PUT YOUR AUTH TOKEN HERE>"}
+	c := hipchat.NewClient("<PUT YOUR AUTH TOKEN HERE>")
 	req := hipchat.MessageRequest{
 		RoomId:        "Rat Man's Den",
 		From:          "GLaDOS",
@@ -38,8 +38,17 @@ func main() {
 	}
 }
 ```
+
+Setting a custom HipChat Server:
+```go
+c := hipchat.NewClient("<AUTH TOKEN>")
+c.BaseURL = "https://your.host.name/v1"
+...
+```
+
 Contributors
 ------------
 + Akshay Shah ([@akshayjshah](https://github.com/akshayjshah))
 + Michael Biven ([@michaelbiven](https://github.com/michaelbiven))
 + Tarrant Rollins ([@tarrant](https://github.com/tarrant))
++ Edward Muller ([@freeformz](https://github.com/freeformz))
