@@ -109,6 +109,9 @@ func urlValuesFromMessageRequest(req MessageRequest) (url.Values, error) {
 }
 
 func (c *Client) PostMessage(req MessageRequest) error {
+	if len(c.BaseURL) == 0 {
+		c.BaseURL = defaultBaseURL
+	}
 	uri := fmt.Sprintf("%s/rooms/message?auth_token=%s", c.BaseURL, url.QueryEscape(c.AuthToken))
 
 	payload, err := urlValuesFromMessageRequest(req)
@@ -138,6 +141,9 @@ func (c *Client) PostMessage(req MessageRequest) error {
 }
 
 func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
+	if len(c.BaseURL) == 0 {
+		c.BaseURL = defaultBaseURL
+	}
 	uri := fmt.Sprintf("%s/rooms/history?auth_token=%s&room_id=%s&date=%s&timezone=%s",
 		c.BaseURL, url.QueryEscape(c.AuthToken), url.QueryEscape(id), url.QueryEscape(date), url.QueryEscape(tz))
 
@@ -163,6 +169,9 @@ func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 }
 
 func (c *Client) RoomList() ([]Room, error) {
+	if len(c.BaseURL) == 0 {
+		c.BaseURL = defaultBaseURL
+	}
 	uri := fmt.Sprintf("%s/rooms/list?auth_token=%s", c.BaseURL, url.QueryEscape(c.AuthToken))
 
 	resp, err := http.Get(uri)
