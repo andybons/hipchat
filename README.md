@@ -54,3 +54,4 @@ Contributors
 + Michael Biven ([@michaelbiven](https://github.com/michaelbiven))
 + Tarrant Rollins ([@tarrant](https://github.com/tarrant))
 + Edward Muller ([@freeformz](https://github.com/freeformz))
++ Matt Blair ([@mblair](https://github.com/mblair))
