@@ -59,6 +59,14 @@ type MessageRequest struct {
 	// "purple", "gray", or "random".
 	// (default: yellow)
 	Color string
+
+	// Whether to test authentication. Note: the normal actions will NOT be performed.
+	// (default: false)
+	AuthTest bool
+}
+
+type AuthResponse struct {
+	Success, Error *HipchatError
 }
 
 type HipchatError struct {
@@ -113,6 +121,9 @@ func (c *Client) PostMessage(req MessageRequest) error {
 		c.BaseURL = defaultBaseURL
 	}
 	uri := fmt.Sprintf("%s/rooms/message?auth_token=%s", c.BaseURL, url.QueryEscape(c.AuthToken))
+	if req.AuthTest {
+		uri += "&auth_test=true"
+	}
 
 	payload, err := urlValuesFromMessageRequest(req)
 	if err != nil {
@@ -129,12 +140,22 @@ func (c *Client) PostMessage(req MessageRequest) error {
 		return err
 	}
 
-	msgResp := &struct{ Status string }{}
-	if err := json.Unmarshal(body, msgResp); err != nil {
-		return err
-	}
-	if msgResp.Status != ResponseStatusSent {
-		return getError(body)
+	if req.AuthTest {
+		msgResp := &AuthResponse{}
+		if err := json.Unmarshal(body, msgResp); err != nil {
+			return err
+		}
+		if msgResp.Error != nil {
+			return msgResp.Error
+		}
+	} else {
+		msgResp := &struct{ Status string }{}
+		if err := json.Unmarshal(body, msgResp); err != nil {
+			return err
+		}
+		if msgResp.Status != ResponseStatusSent {
+			return getError(body)
+		}
 	}
 
 	return nil
