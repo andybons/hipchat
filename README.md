@@ -48,6 +48,13 @@ c.BaseURL = "https://your.host.name/v1"
 ...
 ```
 
+Setting a custom HipChat Server with customize proxy settings:
+```go
+c := hipchat.NewProxyClient("<AUTH TOKEN>","<PROXY_URL:PROXY_PORT>")
+c.ProxyURL = "https://proxy_url:proxy:port"
+...
+```
+
 Contributors
 ------------
 + Akshay Shah ([@akshayjshah](https://github.com/akshayjshah))
@@ -56,3 +63,4 @@ Contributors
 + Edward Muller ([@freeformz](https://github.com/freeformz))
 + Matt Blair ([@mblair](https://github.com/mblair))
 + Gordon Goetz ([@gtosh4](https://github.com/gtosh4))
++ Paras Patel  ([@patelparas](https://github.com/PatelParas))

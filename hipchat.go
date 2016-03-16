@@ -86,15 +86,22 @@ type ErrorResponse struct {
 type Client struct {
 	AuthToken string
 	BaseURL   string
+	ProxyURL  string
 }
 
 // NewClient allocates and returns a Client with the given authToken.
 // By default, the client will use the publicly available HipChat servers.
 // For internal or custom servers, set the BaseURL field of the Client.
 func NewClient(authToken string) Client {
-	return Client{AuthToken: authToken, BaseURL: defaultBaseURL}
+	return Client{AuthToken: authToken, BaseURL: defaultBaseURL, ProxyURL: ""}
 }
 
+//NewProxyClient allocates and returns a Client with give authtoken and proxyURL
+//ByDefault this client use default proxy settings
+//Useful when your servers are inside Private DC which need $http_proxy setting to connect internet
+func NewProxyClient(authToken string, proxyURL string) Client {
+	return Client{AuthToken: authToken, BaseURL: defaultBaseURL, ProxyURL: proxyURL}
+}
 func urlValuesFromMessageRequest(req MessageRequest) (url.Values, error) {
 	if len(req.RoomId) == 0 || len(req.From) == 0 || len(req.Message) == 0 {
 		return nil, errors.New("The RoomId, From, and Message fields are all required.")
@@ -130,6 +137,13 @@ func (c *Client) PostMessage(req MessageRequest) error {
 		return err
 	}
 
+	if len(c.ProxyURL) != 0 {
+		proxyUrl, err := url.Parse(c.ProxyURL)
+		if err != nil {
+			return err
+		}
+		http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+	}
 	resp, err := http.PostForm(uri, payload)
 	if err != nil {
 		return err
@@ -168,6 +182,13 @@ func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 	uri := fmt.Sprintf("%s/rooms/history?auth_token=%s&room_id=%s&date=%s&timezone=%s",
 		c.BaseURL, url.QueryEscape(c.AuthToken), url.QueryEscape(id), url.QueryEscape(date), url.QueryEscape(tz))
 
+	if len(c.ProxyURL) != 0 {
+		proxyUrl, err := url.Parse(c.ProxyURL)
+		if err != nil {
+			return err
+		}
+		http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+	}
 	resp, err := http.Get(uri)
 	if err != nil {
 		return nil, err
@@ -195,6 +216,13 @@ func (c *Client) RoomList() ([]Room, error) {
 	}
 	uri := fmt.Sprintf("%s/rooms/list?auth_token=%s", c.BaseURL, url.QueryEscape(c.AuthToken))
 
+	if len(c.ProxyURL) != 0 {
+		proxyUrl, err := url.Parse(c.ProxyURL)
+		if err != nil {
+			return err
+		}
+		http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+	}
 	resp, err := http.Get(uri)
 	if err != nil {
 		return nil, err
