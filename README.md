@@ -51,7 +51,6 @@ c.BaseURL = "https://your.host.name/v1"
 Setting a custom HipChat Server with customize proxy settings:
 ```go
 c := hipchat.NewProxyClient("<AUTH TOKEN>","<PROXY_URL:PROXY_PORT>")
-c.ProxyURL = "https://proxy_url:proxy:port"
 ...
 ```
 

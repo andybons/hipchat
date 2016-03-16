@@ -2,12 +2,14 @@
 package hipchat
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"time"
 )
 
 const (
@@ -86,22 +88,28 @@ type ErrorResponse struct {
 type Client struct {
 	AuthToken string
 	BaseURL   string
-	ProxyURL  string
+	Timeout   time.Duration
+	Transport http.RoundTripper
 }
 
 // NewClient allocates and returns a Client with the given authToken.
 // By default, the client will use the publicly available HipChat servers.
 // For internal or custom servers, set the BaseURL field of the Client.
 func NewClient(authToken string) Client {
-	return Client{AuthToken: authToken, BaseURL: defaultBaseURL, ProxyURL: ""}
+	return Client{AuthToken: authToken, BaseURL: defaultBaseURL, Transport: http.DefaultTransport}
 }
 
 //NewProxyClient allocates and returns a Client with give authtoken and proxyURL
 //ByDefault this client use default proxy settings
 //Useful when your servers are inside Private DC which need $http_proxy setting to connect internet
 func NewProxyClient(authToken string, proxyURL string) Client {
-	return Client{AuthToken: authToken, BaseURL: defaultBaseURL, ProxyURL: proxyURL}
+	proxyurl, err := url.Parse(proxyURL)
+	if err != nil {
+		return Client{}
+	}
+	return Client{AuthToken: authToken, BaseURL: defaultBaseURL, Transport: &http.Transport{Proxy: http.ProxyURL(proxyurl)}}
 }
+
 func urlValuesFromMessageRequest(req MessageRequest) (url.Values, error) {
 	if len(req.RoomId) == 0 || len(req.From) == 0 || len(req.Message) == 0 {
 		return nil, errors.New("The RoomId, From, and Message fields are all required.")
@@ -137,17 +145,21 @@ func (c *Client) PostMessage(req MessageRequest) error {
 		return err
 	}
 
-	if len(c.ProxyURL) != 0 {
-		proxyUrl, err := url.Parse(c.ProxyURL)
-		if err != nil {
-			return err
-		}
-		http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
-	}
-	resp, err := http.PostForm(uri, payload)
+	reqs, err := http.NewRequest("POST", uri, bytes.NewBufferString(payload.Encode()))
+	reqs.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	if err != nil {
 		return err
 	}
+	client := &http.Client{
+		Transport: c.Transport,
+		Timeout:   c.Timeout,
+	}
+
+	resp, err := client.Do(reqs)
+	if err != nil {
+		return err
+	}
+
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -182,17 +194,20 @@ func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 	uri := fmt.Sprintf("%s/rooms/history?auth_token=%s&room_id=%s&date=%s&timezone=%s",
 		c.BaseURL, url.QueryEscape(c.AuthToken), url.QueryEscape(id), url.QueryEscape(date), url.QueryEscape(tz))
 
-	if len(c.ProxyURL) != 0 {
-		proxyUrl, err := url.Parse(c.ProxyURL)
-		if err != nil {
-			return err
-		}
-		http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
-	}
-	resp, err := http.Get(uri)
+	reqs, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		return nil, err
 	}
+	client := &http.Client{
+		Transport: c.Transport,
+		Timeout:   c.Timeout,
+	}
+
+	resp, err := client.Do(reqs)
+	if err != nil {
+		return nil, err
+	}
+
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -202,6 +217,7 @@ func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, getError(body)
 	}
+
 	msgResp := &struct{ Messages []Message }{}
 	if err := json.Unmarshal(body, msgResp); err != nil {
 		return nil, err
@@ -216,14 +232,15 @@ func (c *Client) RoomList() ([]Room, error) {
 	}
 	uri := fmt.Sprintf("%s/rooms/list?auth_token=%s", c.BaseURL, url.QueryEscape(c.AuthToken))
 
-	if len(c.ProxyURL) != 0 {
-		proxyUrl, err := url.Parse(c.ProxyURL)
-		if err != nil {
-			return err
-		}
-		http.DefaultTransport = &http.Transport{Proxy: http.ProxyURL(proxyUrl)}
+	reqs, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return nil, err
 	}
-	resp, err := http.Get(uri)
+	client := &http.Client{
+		Transport: c.Transport,
+		Timeout:   c.Timeout,
+	}
+	resp, err := client.Do(reqs)
 	if err != nil {
 		return nil, err
 	}
