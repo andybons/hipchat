@@ -57,7 +57,7 @@ if err != nil {
 	log.Printf("Expected no error, but got %q", err)
 }
 c.Transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
-...
+```
 
 Contributors
 ------------
