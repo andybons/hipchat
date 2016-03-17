@@ -50,9 +50,14 @@ c.BaseURL = "https://your.host.name/v1"
 
 Setting a custom HipChat Server with customize proxy settings:
 ```go
-c := hipchat.NewProxyClient("<AUTH TOKEN>","<PROXY_URL:PROXY_PORT>")
+c := hipchat.NewClient("<AUTH TOKEN>")
+
+proxyURL, err := url.Parse("<PROXY_URL:PROXY_PORT>")
+if err != nil {
+	log.Printf("Expected no error, but got %q", err)
+}
+c.Transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
 ...
-```
 
 Contributors
 ------------

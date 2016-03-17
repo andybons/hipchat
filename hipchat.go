@@ -99,17 +99,6 @@ func NewClient(authToken string) Client {
 	return Client{AuthToken: authToken, BaseURL: defaultBaseURL, Transport: http.DefaultTransport}
 }
 
-//NewProxyClient allocates and returns a Client with give authtoken and proxyURL
-//ByDefault this client use default proxy settings
-//Useful when your servers are inside Private DC which need $http_proxy setting to connect internet
-func NewProxyClient(authToken string, proxyURL string) Client {
-	proxyurl, err := url.Parse(proxyURL)
-	if err != nil {
-		return Client{}
-	}
-	return Client{AuthToken: authToken, BaseURL: defaultBaseURL, Transport: &http.Transport{Proxy: http.ProxyURL(proxyurl)}}
-}
-
 func urlValuesFromMessageRequest(req MessageRequest) (url.Values, error) {
 	if len(req.RoomId) == 0 || len(req.From) == 0 || len(req.Message) == 0 {
 		return nil, errors.New("The RoomId, From, and Message fields are all required.")
