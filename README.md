@@ -48,7 +48,7 @@ c.BaseURL = "https://your.host.name/v1"
 ...
 ```
 
-Setting a custom HipChat Server with customize proxy settings:
+Use customized proxy settings In case you need to use transport other than ``htttp.DefaultTransport``:
 ```go
 c := hipchat.NewClient("<AUTH TOKEN>")
 

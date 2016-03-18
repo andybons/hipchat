@@ -2,13 +2,13 @@
 package hipchat
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 )
 
@@ -96,7 +96,11 @@ type Client struct {
 // By default, the client will use the publicly available HipChat servers.
 // For internal or custom servers, set the BaseURL field of the Client.
 func NewClient(authToken string) Client {
-	return Client{AuthToken: authToken, BaseURL: defaultBaseURL, Transport: http.DefaultTransport}
+	return Client{
+		AuthToken: authToken,
+		BaseURL:   defaultBaseURL,
+		Transport: http.DefaultTransport,
+	}
 }
 
 func urlValuesFromMessageRequest(req MessageRequest) (url.Values, error) {
@@ -134,7 +138,7 @@ func (c *Client) PostMessage(req MessageRequest) error {
 		return err
 	}
 
-	reqs, err := http.NewRequest("POST", uri, bytes.NewBufferString(payload.Encode()))
+	reqs, err := http.NewRequest("POST", uri, strings.NewReader(payload.Encode()))
 	reqs.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	if err != nil {
 		return err
