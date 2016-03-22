@@ -48,13 +48,13 @@ c.BaseURL = "https://your.host.name/v1"
 ...
 ```
 
-Use customized proxy settings In case you need to use transport other than ``htttp.DefaultTransport``:
+Use customized proxy settings In case you need to use transport other than `http.DefaultTransport`:
 ```go
 c := hipchat.NewClient("<AUTH TOKEN>")
 
 proxyURL, err := url.Parse("<PROXY_URL:PROXY_PORT>")
 if err != nil {
-	log.Printf("Expected no error, but got %q", err)
+	log.Fatalf("Expected no error, but got %q", err)
 }
 c.Transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
 ```
