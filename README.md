@@ -48,6 +48,17 @@ c.BaseURL = "https://your.host.name/v1"
 ...
 ```
 
+Use customized proxy settings In case you need to use transport other than `http.DefaultTransport`:
+```go
+c := hipchat.NewClient("<AUTH TOKEN>")
+
+proxyURL, err := url.Parse("<PROXY_URL:PROXY_PORT>")
+if err != nil {
+	log.Fatalf("Expected no error, but got %q", err)
+}
+c.Transport = &http.Transport{Proxy: http.ProxyURL(proxyURL)}
+```
+
 Contributors
 ------------
 + Akshay Shah ([@akshayjshah](https://github.com/akshayjshah))
@@ -56,3 +67,4 @@ Contributors
 + Edward Muller ([@freeformz](https://github.com/freeformz))
 + Matt Blair ([@mblair](https://github.com/mblair))
 + Gordon Goetz ([@gtosh4](https://github.com/gtosh4))
++ Paras Patel  ([@patelparas](https://github.com/PatelParas))

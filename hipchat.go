@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
+	"time"
 )
 
 const (
@@ -86,13 +88,19 @@ type ErrorResponse struct {
 type Client struct {
 	AuthToken string
 	BaseURL   string
+	Timeout   time.Duration
+	Transport http.RoundTripper
 }
 
 // NewClient allocates and returns a Client with the given authToken.
 // By default, the client will use the publicly available HipChat servers.
 // For internal or custom servers, set the BaseURL field of the Client.
 func NewClient(authToken string) Client {
-	return Client{AuthToken: authToken, BaseURL: defaultBaseURL}
+	return Client{
+		AuthToken: authToken,
+		BaseURL:   defaultBaseURL,
+		Transport: http.DefaultTransport,
+	}
 }
 
 func urlValuesFromMessageRequest(req MessageRequest) (url.Values, error) {
@@ -130,10 +138,21 @@ func (c *Client) PostMessage(req MessageRequest) error {
 		return err
 	}
 
-	resp, err := http.PostForm(uri, payload)
+	reqs, err := http.NewRequest("POST", uri, strings.NewReader(payload.Encode()))
+	reqs.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	if err != nil {
 		return err
 	}
+	client := &http.Client{
+		Transport: c.Transport,
+		Timeout:   c.Timeout,
+	}
+
+	resp, err := client.Do(reqs)
+	if err != nil {
+		return err
+	}
+
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -168,10 +187,20 @@ func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 	uri := fmt.Sprintf("%s/rooms/history?auth_token=%s&room_id=%s&date=%s&timezone=%s",
 		c.BaseURL, url.QueryEscape(c.AuthToken), url.QueryEscape(id), url.QueryEscape(date), url.QueryEscape(tz))
 
-	resp, err := http.Get(uri)
+	reqs, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		return nil, err
 	}
+	client := &http.Client{
+		Transport: c.Transport,
+		Timeout:   c.Timeout,
+	}
+
+	resp, err := client.Do(reqs)
+	if err != nil {
+		return nil, err
+	}
+
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -181,6 +210,7 @@ func (c *Client) RoomHistory(id, date, tz string) ([]Message, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, getError(body)
 	}
+
 	msgResp := &struct{ Messages []Message }{}
 	if err := json.Unmarshal(body, msgResp); err != nil {
 		return nil, err
@@ -195,7 +225,15 @@ func (c *Client) RoomList() ([]Room, error) {
 	}
 	uri := fmt.Sprintf("%s/rooms/list?auth_token=%s", c.BaseURL, url.QueryEscape(c.AuthToken))
 
-	resp, err := http.Get(uri)
+	reqs, err := http.NewRequest("GET", uri, nil)
+	if err != nil {
+		return nil, err
+	}
+	client := &http.Client{
+		Transport: c.Transport,
+		Timeout:   c.Timeout,
+	}
+	resp, err := client.Do(reqs)
 	if err != nil {
 		return nil, err
 	}
